@@ -52,15 +52,18 @@ export const updateSession = async (req, res) => {
   const { session } = req.body;
   try {
     if (req.user.role === "admin") {
-      const updatedSession = await Session.findByIdAndUpdate(
-        sessionId,
-        { session },
-        { new: true }
-      );
-      if (updatedSession) {
-        return res
-          .status(200)
-          .json({ message: "Session updated successfully" });
+      const isSessionExist = await Session.findById(sessionId);
+      if (isSessionExist) {
+        const updateSession = await Session.findByIdAndUpdate(sessionId, {
+          session,
+        });
+        if (updateSession) {
+          return res
+            .status(200)
+            .json({ message: "Session updated successfully" });
+        } else {
+          return res.status(404).json({ message: "Failed to update session!" });
+        }
       } else {
         return res.status(404).json({ message: "Session not found" });
       }
