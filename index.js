@@ -1,5 +1,4 @@
 import express from "express";
-import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
 import { config } from "dotenv";
 import dbConfig from "./config/dbConfig.js";
@@ -11,6 +10,7 @@ import departmentRoutes from "./routes/department.route.js";
 import teacherRoutes from "./routes/teacher.route.js";
 import sessionRoutes from "./routes/session.route.js";
 import courseRoutes from "./routes/course.route.js";
+import sessionCourse from "./routes/sessionCourse.route.js";
 
 // Call the config function from the dotenv package
 config();
@@ -33,6 +33,7 @@ app.use("/api/department", departmentRoutes);
 app.use("/api/teacher", teacherRoutes);
 app.use("/api/session", sessionRoutes);
 app.use("/api/course", courseRoutes);
+app.use("/api/session-course", sessionCourse);
 
 // Create a express server
 app.listen(PORT, () => {
