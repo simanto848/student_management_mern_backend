@@ -25,7 +25,7 @@ export const createFaculty = async (req, res) => {
 export const getFaculties = async (req, res) => {
   try {
     const faculties = await Faculty.find();
-    return res.status(200).json({ faculties });
+    return res.status(200).json(faculties);
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -35,7 +35,7 @@ export const getFaculty = async (req, res) => {
   try {
     const { facultyId } = req.params;
     const faculty = await Faculty.findById(facultyId);
-    return res.status(200).json({ faculty });
+    return res.status(200).json(faculty);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: error.message });
