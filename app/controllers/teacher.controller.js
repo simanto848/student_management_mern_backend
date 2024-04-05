@@ -29,13 +29,11 @@ export const createTeacher = async (req, res) => {
           await teacher.save();
           return res.status(201).json({
             message: "Teacher created successfully",
-            teacher,
           });
         }
       }
     }
   } catch (error) {
-    console.log(error);
     return res.status(500).json({
       message: error.message,
     });
@@ -47,7 +45,7 @@ export const getAllTeachers = async (req, res) => {
     const teachers = await Teacher.find()
       .populate("facultyId", "name")
       .populate("departmentId", "shortName");
-    return res.status(200).json({ teachers });
+    return res.status(200).json(teachers);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: error.message });
@@ -63,7 +61,7 @@ export const getTeacher = async (req, res) => {
     if (!teacher) {
       return res.status(404).json({ message: "Teacher not found" });
     } else {
-      return res.status(200).json({ teacher });
+      return res.status(200).json(teacher);
     }
   } catch (error) {
     console.log(error);
@@ -77,32 +75,37 @@ export const updateTeacher = async (req, res) => {
     req.body;
   try {
     const faculty = await Faculty.findById(facultyId);
-    if (!faculty) {
-      return res.status(404).json({ message: "Faculty not found" });
-    } else {
-      const department = await Department.findById(departmentId);
-      if (!department) {
-        return res.status(404).json({ message: "Department not found" });
+    if (req.user.role === "admin" || req.user.role === "teacher") {
+      if (!faculty) {
+        return res.status(404).json({ message: "Faculty not found" });
       } else {
-        const teacher = await Teacher.findById(teacherId);
-        if (!teacher) {
-          return res.status(404).json({ message: "Teacher not found" });
+        const department = await Department.findById(departmentId);
+        if (!department) {
+          return res.status(404).json({ message: "Department not found" });
         } else {
-          const updaatedTeacher = await Teacher.findByIdAndUpdate(teacherId, {
-            name,
-            phone,
-            email,
-            facultyId,
-            departmentId,
-            designation,
-            status,
-          });
-          return res.status(200).json({
-            message: "Teacher updated successfully",
-            teacher: updaatedTeacher,
-          });
+          const teacher = await Teacher.findById(teacherId);
+          if (!teacher) {
+            return res.status(404).json({ message: "Teacher not found" });
+          } else {
+            const updaatedTeacher = await Teacher.findByIdAndUpdate(teacherId, {
+              name,
+              phone,
+              email,
+              facultyId,
+              departmentId,
+              designation,
+              status,
+            });
+            return res.status(200).json({
+              message: "Teacher updated successfully",
+            });
+          }
         }
       }
+    } else {
+      return res
+        .status(403)
+        .json({ message: "You are not authorized to perform this action" });
     }
   } catch (error) {
     console.log(error);
@@ -114,11 +117,19 @@ export const deleteTeacher = async (req, res) => {
   const { teacherId } = req.params;
   try {
     const teacher = await Teacher.findById(teacherId);
-    if (!teacher) {
-      return res.status(404).json({ message: "Teacher not found" });
+    if (req.user.role !== "admin") {
+      return res
+        .status(403)
+        .json({ message: "You are not authorized to perform this action" });
     } else {
-      await Teacher.findByIdAndDelete(teacherId);
-      return res.status(200).json({ message: "Teacher deleted successfully" });
+      if (!teacher) {
+        return res.status(404).json({ message: "Teacher not found" });
+      } else {
+        await Teacher.findByIdAndDelete(teacherId);
+        return res
+          .status(200)
+          .json({ message: "Teacher deleted successfully" });
+      }
     }
   } catch (error) {
     console.log(error);
