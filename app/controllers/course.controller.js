@@ -3,6 +3,11 @@ import Course from "../models/Course.js";
 export const createCourse = async (req, res) => {
   const course = new Course(req.body);
   try {
+    if (req.user.role !== "admin") {
+      return res
+        .status(403)
+        .send({ message: "You are not authorized to perform this action" });
+    }
     const isCourseExist = await Course.findOne({
       $or: [{ code: course.code }, { name: course.name }],
     });
@@ -42,6 +47,11 @@ export const getCourse = async (req, res) => {
 
 export const updateCourse = async (req, res) => {
   try {
+    if (req.user.role !== "admin") {
+      return res
+        .status(403)
+        .send({ message: "You are not authorized to perform this action" });
+    }
     const course = await Course.findByIdAndUpdate(
       req.params.courseId,
       req.body,
@@ -60,6 +70,11 @@ export const updateCourse = async (req, res) => {
 
 export const deleteCourse = async (req, res) => {
   try {
+    if (req.user.role !== "admin") {
+      return res
+        .status(403)
+        .send({ message: "You are not authorized to perform this action" });
+    }
     const course = await Course.findByIdAndDelete(req.params.courseId);
     if (!course) {
       return res.status(404).send({ message: "Course not found" });
