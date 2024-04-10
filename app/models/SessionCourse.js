@@ -7,13 +7,11 @@ const sessionCourseSchema = new mongoose.Schema(
       ref: "Session",
       required: true,
     },
-    courseId: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Course",
-        required: true,
-      },
-    ],
+    courseId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course",
+      required: true,
+    },
     departmentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Department",

@@ -45,6 +45,23 @@ export const getCourse = async (req, res) => {
   }
 };
 
+export const getCourseByDepartment = async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res
+        .status(403)
+        .send({ message: "You are not authorized to perform this action" });
+    }
+    const courses = await Course.find({
+      departmentId: req.params.departmentId,
+    });
+    return res.status(200).json(courses);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({ message: error.message });
+  }
+};
+
 export const updateCourse = async (req, res) => {
   try {
     if (req.user.role !== "admin") {

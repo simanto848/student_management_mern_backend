@@ -33,7 +33,7 @@ app.use("/api/department", departmentRoutes);
 app.use("/api/teacher", teacherRoutes);
 app.use("/api/session", sessionRoutes);
 app.use("/api/course", courseRoutes);
-app.use("/api/session-course", sessionCourse);
+app.use("/api/session-courses", sessionCourse);
 
 // Create a express server
 app.listen(PORT, () => {

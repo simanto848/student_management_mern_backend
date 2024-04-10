@@ -32,7 +32,7 @@ export const userLogin = async (req, res) => {
       .cookie("auth_token", token, {
         httpOnly: true,
       })
-      .json({ user: rest, token});
+      .json({ user: rest, token });
   } catch (error) {
     console.log("Error in login: ", error);
     return res.status(500).json({ message: error.message });
