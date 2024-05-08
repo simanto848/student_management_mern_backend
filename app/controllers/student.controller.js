@@ -52,10 +52,9 @@ export const create = async (req, res) => {
       const data = await student.save();
 
       const emailSent = await mail(email, password);
-      console.log(emailSent);
 
       if (emailSent) {
-        res.status(201).json(data);
+        res.status(201).json({ message: "Student was created successfully." });
       } else {
         res.status(500).json({
           message: "Failed to send email to the student.",

@@ -14,17 +14,16 @@ const mail = async function (email, password) {
     from: process.env.MAIL_FROM,
     to: email,
     subject: "Activate Account",
-    html: `<i>To login into your account use this password: ${password}</a></i>`,
+    html: `<i>To login into your account use this password: ${password}</i>`,
   };
 
-  transporter.sendMail(message, function (err, info) {
-    if (err) {
-      console.log(err);
-      return false;
-    } else {
-      return email;
-    }
-  });
+  try {
+    const info = await transporter.sendMail(message);
+    return email;
+  } catch (error) {
+    console.error("Error sending email:", error);
+    return null;
+  }
 };
 
 export default mail;
