@@ -12,18 +12,17 @@ export const create = async (req, res) => {
     } else {
       const {
         name,
-        registrationNo,
         rollNo,
         phoneNo,
         email,
         courseFee,
         departmentId,
         sessionId,
+        departmentShortName,
       } = req.body;
 
       if (
         !name ||
-        !registrationNo ||
         !rollNo ||
         !phoneNo ||
         !email ||
@@ -35,30 +34,50 @@ export const create = async (req, res) => {
           message: "All fields are required!",
         });
       }
-      const password = randomPassword(8);
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const student = new Student({
-        name: name,
-        registrationNo: registrationNo,
-        rollNo: rollNo,
-        phoneNo: phoneNo,
-        email: email,
-        password: hashedPassword,
-        courseFee: courseFee,
-        departmentId: departmentId,
-        sessionId: sessionId,
-      });
 
-      const data = await student.save();
-
-      const emailSent = await mail(email, password);
-
-      if (emailSent) {
-        res.status(201).json({ message: "Student was created successfully." });
+      const studentExists = await Student.findOne({ email: email });
+      if (studentExists) {
+        return res.status(400).json({ message: "Student already exists." });
       } else {
-        res.status(500).json({
-          message: "Failed to send email to the student.",
+        const uniqueRegistration =
+          departmentShortName + "-" + new Date().getTime().toString().slice(-4);
+        const findStudentWithRegistration = await Student.findOne({
+          registrationNo: uniqueRegistration,
         });
+
+        if (findStudentWithRegistration) {
+          return res
+            .status(400)
+            .json({ message: "Registration number already exists." });
+        } else {
+          const password = randomPassword(8);
+          const hashedPassword = await bcrypt.hash(password, 10);
+          const student = new Student({
+            name: name,
+            registrationNo: uniqueRegistration,
+            rollNo: rollNo,
+            phoneNo: phoneNo,
+            email: email,
+            password: hashedPassword,
+            courseFee: courseFee,
+            departmentId: departmentId,
+            sessionId: sessionId,
+          });
+
+          const data = await student.save();
+
+          const emailSent = await mail(email, password);
+
+          if (emailSent) {
+            res
+              .status(201)
+              .json({ message: "Student was created successfully." });
+          } else {
+            res.status(500).json({
+              message: "Failed to send email to the student.",
+            });
+          }
+        }
       }
     }
   } catch (err) {
@@ -75,7 +94,9 @@ export const findAll = async (req, res) => {
         message: "Require Admin Role!",
       });
     } else {
-      const data = await Student.find();
+      const data = await Student.find()
+        .populate("departmentId")
+        .populate("sessionId");
       res.json(data);
     }
   } catch (err) {
@@ -140,7 +161,7 @@ export const remove = async (req, res) => {
         message: "Require Admin Role!",
       });
     } else {
-      const data = await Student.findByIdAndRemove(id);
+      const data = await Student.findByIdAndDelete(id);
       if (!data) {
         res.status(404).json({
           message: `Cannot delete Student with id=${id}. Maybe Student was not found!`,
@@ -151,7 +172,7 @@ export const remove = async (req, res) => {
     }
   } catch (err) {
     res.status(500).json({
-      message: "Could not delete Student with id=" + id,
+      message: `Could not delete Student with id ${id}`,
     });
   }
 };

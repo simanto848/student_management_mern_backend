@@ -12,11 +12,11 @@ const studentSchema = new mongoose.Schema(
       unique: true,
     },
     rollNo: {
-      type: String,
+      type: Number,
       required: true,
     },
     phoneNo: {
-      type: String,
+      type: Number,
       required: true,
       unique: true,
     },
