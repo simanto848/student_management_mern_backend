@@ -12,6 +12,7 @@ import sessionRoutes from "./routes/session.route.js";
 import courseRoutes from "./routes/course.route.js";
 import sessionCourseRoutes from "./routes/sessionCourse.route.js";
 import studentRoutes from "./routes/student.route.js";
+import batchRoutes from "./routes/batch.route.js";
 
 // Call the config function from the dotenv package
 config();
@@ -36,6 +37,7 @@ app.use("/api/session", sessionRoutes);
 app.use("/api/course", courseRoutes);
 app.use("/api/session-courses", sessionCourseRoutes);
 app.use("/api/student", studentRoutes);
+app.use("/api/batch", batchRoutes);
 
 // Create a express server
 app.listen(PORT, () => {
