@@ -16,7 +16,7 @@ export const create = async (req, res) => {
         .json({ message: "You are not authorized to access this page!" });
     } else {
       // Check if batch already exists
-      const isBatchExists = Batch.findOne({ name });
+      const isBatchExists = await Batch.findOne({ name });
       if (isBatchExists) {
         return res.status(400).json({ message: "Batch already exists!" });
       } else {
@@ -47,8 +47,16 @@ export const findAll = async (req, res) => {
         .status(403)
         .json({ message: "You are not authorized to access this page!" });
     } else {
-      const batches = await Batch.find();
-      return res.status(200).json(batches);
+      const batches = await Batch.find().populate(
+        "departmentId sessionId",
+        "shortName session"
+      );
+      const modifiedBatches = batches.map((batch) => ({
+        ...batch._doc,
+        departmentName: batch.departmentId.shortName,
+        session: batch.sessionId.session,
+      }));
+      return res.status(200).json(modifiedBatches);
     }
   } catch (error) {
     return res.status(500).json({
