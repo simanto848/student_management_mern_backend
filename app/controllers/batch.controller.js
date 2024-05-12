@@ -87,6 +87,27 @@ export const findOne = async (req, res) => {
   }
 };
 
+// Find batches by session id
+export const findBySessionId = async (req, res) => {
+  try {
+    const sessionId = req.params.sessionId;
+    if (req.user.role !== "admin") {
+      return res
+        .status(403)
+        .json({ message: "You are not authorized to access this page!" });
+    } else {
+      const batches = await Batch.find({ sessionId }).populate(
+        "departmentId sessionId"
+      );
+      return res.status(200).json(batches);
+    }
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message || "Some error occurred while retrieving batches.",
+    });
+  }
+};
+
 // Update a batch identified by the batchId in the request
 export const update = async (req, res) => {
   try {

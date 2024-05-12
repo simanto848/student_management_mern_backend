@@ -38,9 +38,9 @@ const studentSchema = new mongoose.Schema(
       ref: "Department",
       required: true,
     },
-    sessionId: {
+    batchId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Session",
+      ref: "Batch",
       required: true,
     },
   },

@@ -17,7 +17,7 @@ export const create = async (req, res) => {
         email,
         courseFee,
         departmentId,
-        sessionId,
+        batchId,
         departmentShortName,
       } = req.body;
 
@@ -28,7 +28,7 @@ export const create = async (req, res) => {
         !email ||
         !courseFee ||
         !departmentId ||
-        !sessionId
+        !batchId
       ) {
         return res.status(400).json({
           message: "All fields are required!",
@@ -52,7 +52,7 @@ export const create = async (req, res) => {
         } else {
           const password = randomPassword(8);
           const hashedPassword = await bcrypt.hash(password, 10);
-          const student = new Student({
+          const newStudent = new Student({
             name: name,
             registrationNo: uniqueRegistration,
             rollNo: rollNo,
@@ -61,15 +61,14 @@ export const create = async (req, res) => {
             password: hashedPassword,
             courseFee: courseFee,
             departmentId: departmentId,
-            sessionId: sessionId,
+            batchId: batchId,
           });
-
-          const data = await student.save();
 
           const emailSent = await mail(email, password);
 
           if (emailSent) {
-            res
+            await newStudent.save();
+            return res
               .status(201)
               .json({ message: "Student was created successfully." });
           } else {
@@ -95,8 +94,14 @@ export const findAll = async (req, res) => {
       });
     } else {
       const data = await Student.find()
-        .populate("departmentId")
-        .populate("sessionId");
+        .populate({
+          path: "batchId",
+          populate: {
+            path: "sessionId",
+            model: "Session",
+          },
+        })
+        .populate("departmentId");
       res.json(data);
     }
   } catch (err) {
@@ -117,13 +122,17 @@ export const findOne = async (req, res) => {
     } else {
       const data = await Student.findById(id);
       if (!data) {
-        res.status(404).json({ message: "Not found Student with id " + id });
+        return res
+          .status(404)
+          .json({ message: `Not found Student with id ${id}` });
       } else {
-        res.json(data);
+        return res.json(data);
       }
     }
   } catch (err) {
-    res.status(500).json({ message: "Error retrieving Student with id=" + id });
+    return res
+      .status(500)
+      .json({ message: "Error retrieving Student with id=" + id });
   }
 };
 
@@ -147,7 +156,7 @@ export const update = async (req, res) => {
     }
   } catch (error) {
     return res.status(500).json({
-      message: "Error updating Student with id=" + id,
+      message: `Error updating Student with id= ${id}`,
     });
   }
 };
@@ -158,12 +167,12 @@ export const remove = async (req, res) => {
   try {
     if (req.user.role !== "admin") {
       return res.status(403).json({
-        message: "Require Admin Role!",
+        message: "You are not authorized to delete this student.",
       });
     } else {
       const data = await Student.findByIdAndDelete(id);
       if (!data) {
-        res.status(404).json({
+        return res.status(404).json({
           message: `Cannot delete Student with id=${id}. Maybe Student was not found!`,
         });
       } else {
@@ -171,7 +180,7 @@ export const remove = async (req, res) => {
       }
     }
   } catch (err) {
-    res.status(500).json({
+    return res.status(500).json({
       message: `Could not delete Student with id ${id}`,
     });
   }

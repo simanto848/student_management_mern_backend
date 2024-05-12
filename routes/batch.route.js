@@ -3,6 +3,7 @@ import {
   create,
   findAll,
   findOne,
+  findBySessionId,
   update,
   remove,
 } from "../app/controllers/batch.controller.js";
@@ -13,6 +14,7 @@ const router = express.Router();
 router.post("/", verifyUser, create);
 router.get("/", verifyUser, findAll);
 router.get("/:batchId", verifyUser, findOne);
+router.get("/session/:sessionId", verifyUser, findBySessionId);
 router.put("/:batchId", verifyUser, update);
 router.delete("/:batchId", verifyUser, remove);
 
