@@ -20,16 +20,16 @@ const studentSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    password: {
-      type: String,
-      required: true,
-    },
     courseFee: {
+      type: Number,
+      required: true,
+    },
+    scholarship: {
+      type: Number,
+      default: 0,
+      required: true,
+    },
+    semesterFee: {
       type: Number,
       required: true,
     },

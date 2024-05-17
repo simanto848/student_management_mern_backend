@@ -12,19 +12,16 @@ const studentEnrollmentSchema = new mongoose.Schema(
       enum: [1, 2, 3, 4, 5, 6, 7, 8],
       required: true,
     },
-    totalPaid: {
+    paidAmount: {
       type: Number,
       required: true,
     },
-    totaldue: {
+    currentDue: {
       type: Number,
     },
     semesterFee: {
       type: Number,
       required: true,
-    },
-    waiver: {
-      type: Number,
     },
     transactionNumber: {
       type: String,

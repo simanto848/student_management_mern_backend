@@ -7,12 +7,22 @@ const studentCourseSchema = new mongoose.Schema(
       ref: "Student",
       required: true,
     },
-    sessionCourseId: {
+    courseId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "SessionCourse",
+      ref: "Course",
+      required: true,
+    },
+    semester: {
+      type: Number,
+      enum: [1, 2, 3, 4, 5, 6, 7, 8],
       required: true,
     },
     attendanceMark: {
+      type: Number,
+      default: 0,
+      required: true,
+    },
+    assignmentMark: {
       type: Number,
       default: 0,
       required: true,
@@ -33,11 +43,6 @@ const studentCourseSchema = new mongoose.Schema(
       required: true,
     },
     finalMark: {
-      type: Number,
-      default: 0,
-      required: true,
-    },
-    totalMark: {
       type: Number,
       default: 0,
       required: true,

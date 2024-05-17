@@ -1,4 +1,5 @@
 import Student from "../models/Student.js";
+import User from "../models/User.js";
 import bcrypt from "bcrypt";
 import mail from "../middlewares/MailSender.js";
 import { randomPassword } from "../middlewares/passwordGenerator.js";
@@ -19,6 +20,7 @@ export const create = async (req, res) => {
         departmentId,
         batchId,
         departmentShortName,
+        scholarship,
       } = req.body;
 
       if (
@@ -28,16 +30,20 @@ export const create = async (req, res) => {
         !email ||
         !courseFee ||
         !departmentId ||
-        !batchId
+        !batchId ||
+        scholarship === undefined ||
+        scholarship === null
       ) {
         return res.status(400).json({
           message: "All fields are required!",
         });
       }
 
-      const studentExists = await Student.findOne({ email: email });
+      const studentExists = await User.findOne({
+        email: email,
+      });
       if (studentExists) {
-        return res.status(400).json({ message: "Student already exists." });
+        return res.status(400).json({ message: "Email already exists." });
       } else {
         const uniqueRegistration =
           departmentShortName + "-" + new Date().getTime().toString().slice(-4);
@@ -52,22 +58,46 @@ export const create = async (req, res) => {
         } else {
           const password = randomPassword(8);
           const hashedPassword = await bcrypt.hash(password, 10);
+
+          const scholarshipPercentage = parseFloat(scholarship);
+          if (
+            isNaN(scholarshipPercentage) ||
+            scholarshipPercentage < 0 ||
+            scholarshipPercentage > 100
+          ) {
+            return res
+              .status(400)
+              .json({ message: "Invalid scholarship percentage." });
+          }
+
+          const scholarshipAmount = (courseFee * scholarshipPercentage) / 100;
+          const discountedFee = courseFee - scholarshipAmount;
+          const semesterFee = discountedFee / 8;
+
           const newStudent = new Student({
             name: name,
             registrationNo: uniqueRegistration,
             rollNo: rollNo,
             phoneNo: phoneNo,
-            email: email,
-            password: hashedPassword,
             courseFee: courseFee,
+            semesterFee: semesterFee,
             departmentId: departmentId,
             batchId: batchId,
+            scholarship: scholarshipAmount,
+            scholarshipAmount: scholarshipAmount,
+          });
+
+          const newUser = new User({
+            email: email,
+            password: hashedPassword,
+            role: "student",
           });
 
           const emailSent = await mail(email, password);
 
           if (emailSent) {
             await newStudent.save();
+            await newUser.save();
             return res
               .status(201)
               .json({ message: "Student was created successfully." });
