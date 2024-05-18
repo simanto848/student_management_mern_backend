@@ -19,10 +19,6 @@ const studentEnrollmentSchema = new mongoose.Schema(
     currentDue: {
       type: Number,
     },
-    semesterFee: {
-      type: Number,
-      required: true,
-    },
     transactionNumber: {
       type: String,
       required: true,
