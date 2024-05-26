@@ -13,7 +13,7 @@ import courseRoutes from "./routes/course.route.js";
 import sessionCourseRoutes from "./routes/sessionCourse.route.js";
 import studentRoutes from "./routes/student.route.js";
 import batchRoutes from "./routes/batch.route.js";
-import studentEnrollementRoutes from "./routes/studentEnrollment.routes.js";
+import studentEnrollementRoutes from "./routes/studentEnrollment.route.js";
 import paymentRoutes from "./routes/payment.route.js";
 
 // Call the config function from the dotenv package

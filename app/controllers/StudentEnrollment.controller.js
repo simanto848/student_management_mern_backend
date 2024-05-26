@@ -42,7 +42,7 @@ export const create = async (req, res) => {
       const admissionPayment = new PaymentDetails({
         studentId: studentId,
         paymentAmount: paidAmount,
-        currentDue: student.courseFee,
+        currentDue: student.courseFee - student.scholarship,
         paymentFor: paymentFor,
         receipt:
           "TRX" + generateRandomString(8) + new Date().getTime().toString(),
@@ -197,27 +197,6 @@ export const findOne = async (req, res) => {
     res.status(200).json({ student, enrollments, studentPaymentDetails });
   } catch (error) {
     res.status(500).json({ message: error.message });
-  }
-};
-
-// Retrive Payment History of a student from the database
-export const getPaymentHistoryByStudentId = async (req, res) => {
-  try {
-    const { studentId } = req.params;
-    if (req.user.role !== "admin" && req.user.role !== "student") {
-      console.log(req.user.role !== "admin");
-      console.log(req.user.role !== "student");
-      return res.status(403).json({
-        message: "Please login to view your payment history!",
-      });
-    }
-
-    const studentPaymentDetails = await PaymentDetails.find({
-      studentId: studentId,
-    });
-    res.status(200).json({ studentPaymentDetails });
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
   }
 };
 

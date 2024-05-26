@@ -18,5 +18,5 @@ export async function updatePayment(paymentId, paymentData) {
 }
 
 export async function deletePayment(paymentId) {
-  await PaymentDetails.findByIdAndRemove(paymentId);
+  await PaymentDetails.findByIdAndDelete(paymentId);
 }
