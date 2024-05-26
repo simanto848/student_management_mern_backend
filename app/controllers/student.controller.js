@@ -141,6 +141,21 @@ export const findAll = async (req, res) => {
   }
 };
 
+export const getStudentByKeyword = async (req, res) => {
+  try {
+    const { searchTerm } = req.query;
+    const students = await Student.find({
+      $or: [
+        { registrationNo: new RegExp(searchTerm, "i") },
+        { batchNo: new RegExp(searchTerm, "i") },
+      ],
+    });
+    res.status(200).json(students);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching students", error });
+  }
+};
+
 export const findOne = async (req, res) => {
   const id = req.params.studentId;
 
@@ -150,7 +165,15 @@ export const findOne = async (req, res) => {
         message: "Require Admin Role!",
       });
     } else {
-      const data = await Student.findById(id);
+      const data = await Student.findById(id)
+        .populate({
+          path: "batchId",
+          populate: {
+            path: "sessionId",
+            model: "Session",
+          },
+        })
+        .populate("departmentId");
       if (!data) {
         return res
           .status(404)

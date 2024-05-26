@@ -12,42 +12,81 @@ export const create = async (req, res) => {
     const { studentId } = req.params;
     const { semester, paidAmount, paymentFor } = req.body;
 
+    // Check if the user is an admin
     if (req.user.role !== "admin") {
       return res
         .status(403)
-        .json({ message: "You are not authorized to perform this action!." });
+        .json({ message: "You are not authorized to perform this action!" });
     }
 
+    // Find the student
     const student = await Student.findById(studentId);
     if (!student) {
       return res.status(404).json({ message: "Student not found!" });
     }
 
+    // Check if the payment is for admission
+    if (paymentFor === "Admission") {
+      const admittedPayment = await PaymentDetails.findOne({
+        studentId: studentId,
+        paymentFor: "Admission",
+      });
+
+      if (admittedPayment) {
+        return res
+          .status(400)
+          .json({ message: "Student has already been admitted!" });
+      }
+
+      // Admit the student
+      const admissionPayment = new PaymentDetails({
+        studentId: studentId,
+        paymentAmount: paidAmount,
+        currentDue: student.courseFee,
+        paymentFor: paymentFor,
+        receipt:
+          "TRX" + generateRandomString(8) + new Date().getTime().toString(),
+      });
+      await admissionPayment.save();
+      return res
+        .status(201)
+        .json({ message: "Student admitted successfully!" });
+    }
+
     const { courseFee, scholarship } = student;
     const netCourseFee = courseFee - scholarship;
+    let currentDue = 0;
 
-    const paymentDetails = new PaymentDetails({
+    // Retrieve the last payment details to get the current due
+    const lastPayment = await PaymentDetails.findOne({
       studentId: studentId,
-      paymentAmount: paidAmount,
-      currentDue: 0,
-      paymentFor: paymentFor,
-      receipt:
-        "TRX" + generateRandomString(8) + new Date().getTime().toString(),
-    });
+    }).sort({ createdAt: -1 });
 
-    // Check if the payment is for a future semester
+    if (lastPayment) {
+      currentDue = lastPayment.currentDue;
+    }
+
+    // Check if payment for this semester already exists
     const existingEnrollment = await StudentEnrollment.findOne({
       studentId: studentId,
       semester: semester,
     });
 
     if (existingEnrollment) {
-      return res.status(400).json({
-        message: "Payment for this semester already exists!",
-      });
+      return res
+        .status(400)
+        .json({ message: "Payment for this semester already exists!" });
     }
 
-    // If the payment is not for "Tuition Fee", record it directly
+    const paymentDetails = new PaymentDetails({
+      studentId: studentId,
+      paymentAmount: paidAmount,
+      currentDue: currentDue,
+      paymentFor: paymentFor,
+      receipt:
+        "TRX" + generateRandomString(8) + new Date().getTime().toString(),
+    });
+
     if (paymentFor !== "Tuition Fee") {
       await paymentDetails.save();
       return res
@@ -64,7 +103,7 @@ export const create = async (req, res) => {
     const totalPaidAmount =
       tuitionPayments.reduce((sum, payment) => sum + payment.paymentAmount, 0) +
       paidAmount;
-    const currentDue = netCourseFee - totalPaidAmount;
+    currentDue = netCourseFee - totalPaidAmount;
 
     const batchId = student.batchId;
     const departmentId = student.departmentId;
@@ -111,7 +150,6 @@ export const create = async (req, res) => {
     });
 
     await enrollment.save();
-
     paymentDetails.currentDue = currentDue;
     await paymentDetails.save();
 
@@ -132,8 +170,7 @@ export const create = async (req, res) => {
     } else {
       return res.status(200).json({
         message:
-          "Partial payment received. Remaining balance must be paid before enrollment.",
-        currentDue,
+          "Partial payment received. Remaining balance must be paid before exam. Current Due",
       });
     }
   } catch (error) {
@@ -160,6 +197,27 @@ export const findOne = async (req, res) => {
     res.status(200).json({ student, enrollments, studentPaymentDetails });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+// Retrive Payment History of a student from the database
+export const getPaymentHistoryByStudentId = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    if (req.user.role !== "admin" && req.user.role !== "student") {
+      console.log(req.user.role !== "admin");
+      console.log(req.user.role !== "student");
+      return res.status(403).json({
+        message: "Please login to view your payment history!",
+      });
+    }
+
+    const studentPaymentDetails = await PaymentDetails.find({
+      studentId: studentId,
+    });
+    res.status(200).json({ studentPaymentDetails });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
   }
 };
 
