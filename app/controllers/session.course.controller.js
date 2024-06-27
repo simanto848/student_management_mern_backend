@@ -123,3 +123,27 @@ export const getSessionCourseByDepartment = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+
+export const updateSessionCourse = async (req, res) => {
+  try {
+    const { sessionCourseId } = req.params;
+    const { teacherId } = req.body;
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+    if (!sessionCourseId || !teacherId) {
+      return res.status(400).json({ message: "Invalid request" });
+    }
+    const sessionCourse = await SessionCourse.findById(sessionCourseId);
+    if (!sessionCourse) {
+      return res.status(404).json({ message: "Session course not found" });
+    }
+    sessionCourse.teacherId = teacherId;
+    await sessionCourse.save();
+    return res
+      .status(200)
+      .json({ message: "Session course teacher updated successfully" });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};

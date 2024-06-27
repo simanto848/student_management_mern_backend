@@ -4,6 +4,7 @@ import {
   getSessionCourseById,
   getSessionByFaculty,
   getSessionCourseByDepartment,
+  updateSessionCourse,
 } from "../app/controllers/session.course.controller.js";
 import { verifyUser } from "../app/middlewares/verifyUser.js";
 
@@ -17,5 +18,6 @@ router.get(
   verifyUser,
   getSessionCourseByDepartment
 );
+router.put("/:sessionCourseId", verifyUser, updateSessionCourse);
 
 export default router;

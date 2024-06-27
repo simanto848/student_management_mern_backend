@@ -17,6 +17,10 @@ const sessionCourseSchema = new mongoose.Schema(
       ref: "Department",
       required: true,
     },
+    teacherId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Teacher",
+    },
   },
   { timestamps: true }
 );
