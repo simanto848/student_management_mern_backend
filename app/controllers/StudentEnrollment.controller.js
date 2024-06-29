@@ -25,20 +25,27 @@ export const create = async (req, res) => {
       return res.status(404).json({ message: "Student not found!" });
     }
 
-    // Check if the payment is for admission
+    // Check if the student is admitted
+    const admittedPayment = await PaymentDetails.findOne({
+      studentId: studentId,
+      paymentFor: "Admission",
+    });
+
+    if (!admittedPayment && paymentFor !== "Admission") {
+      return res
+        .status(400)
+        .json({ message: "Student must be admitted first!" });
+    }
+
+    // Prevent duplicate admission
+    if (paymentFor === "Admission" && admittedPayment) {
+      return res
+        .status(400)
+        .json({ message: "Student has already been admitted!" });
+    }
+
+    // Process admission payment
     if (paymentFor === "Admission") {
-      const admittedPayment = await PaymentDetails.findOne({
-        studentId: studentId,
-        paymentFor: "Admission",
-      });
-
-      if (admittedPayment) {
-        return res
-          .status(400)
-          .json({ message: "Student has already been admitted!" });
-      }
-
-      // Admit the student
       const admissionPayment = new PaymentDetails({
         studentId: studentId,
         paymentAmount: paidAmount,
