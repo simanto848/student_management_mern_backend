@@ -31,10 +31,10 @@ export const userLogin = async (req, res) => {
       .status(200)
       .cookie("auth_token", token, {
         httpOnly: true,
+        secure: true,
       })
       .json({ user: rest, token });
   } catch (error) {
-    console.log("Error in login: ", error);
     return res.status(500).json({ message: error.message });
   }
 };
