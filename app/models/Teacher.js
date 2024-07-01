@@ -40,6 +40,11 @@ const teacherSchema = new mongoose.Schema(
       required: true,
       default: "Active",
     },
+    role: {
+      type: String,
+      required: true,
+      default: "Teacher",
+    },
   },
   { timestamps: true }
 );
