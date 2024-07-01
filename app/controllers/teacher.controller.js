@@ -1,6 +1,9 @@
+import bcrypt from "bcrypt";
 import Teacher from "../models/Teacher.js";
 import Faculty from "../models/Faculty.js";
 import Department from "../models/Department.js";
+import generateRandomString from "../helpers/StringGenerator.js";
+import mail from "../middlewares/MailSender.js";
 
 export const createTeacher = async (req, res) => {
   const { name, phone, email, facultyId, departmentId, designation, status } =
@@ -17,19 +20,36 @@ export const createTeacher = async (req, res) => {
         if (!department) {
           return res.status(404).json({ message: "Department not found" });
         } else {
-          const teacher = new Teacher({
-            name,
-            phone,
-            email,
-            facultyId,
-            departmentId,
-            designation,
-            status,
-          });
-          await teacher.save();
-          return res.status(201).json({
-            message: "Teacher created successfully",
-          });
+          const teacherExists = await Teacher.findOne({ email });
+          if (teacherExists) {
+            return res.status(400).json({ message: "Teacher already exists" });
+          } else {
+            const password = generateRandomString(8);
+            const hashedPassword = await bcrypt.hash(password, 10);
+
+            const teacher = new Teacher({
+              name,
+              phone,
+              email,
+              password: hashedPassword,
+              facultyId,
+              departmentId,
+              designation,
+              status,
+            });
+
+            const emailSent = await mail(email, password);
+            if (!emailSent) {
+              return res.status(500).json({
+                message: "Error sending email",
+              });
+            } else {
+              await teacher.save();
+              return res.status(201).json({
+                message: "Teacher created successfully",
+              });
+            }
+          }
         }
       }
     }
