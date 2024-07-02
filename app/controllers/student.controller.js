@@ -1,5 +1,4 @@
 import Student from "../models/Student.js";
-import User from "../models/User.js";
 import bcrypt from "bcrypt";
 import mail from "../middlewares/MailSender.js";
 import { randomPassword } from "../middlewares/passwordGenerator.js";
@@ -39,7 +38,7 @@ export const create = async (req, res) => {
         });
       }
 
-      const studentExists = await User.findOne({
+      const studentExists = await Student.findOne({
         email: email,
       });
       if (studentExists) {
@@ -78,6 +77,8 @@ export const create = async (req, res) => {
             name: name,
             registrationNo: uniqueRegistration,
             rollNo: rollNo,
+            email: email,
+            password: hashedPassword,
             phoneNo: phoneNo,
             courseFee: courseFee,
             semesterFee: semesterFee,
@@ -87,17 +88,10 @@ export const create = async (req, res) => {
             scholarshipAmount: scholarshipAmount,
           });
 
-          const newUser = new User({
-            email: email,
-            password: hashedPassword,
-            role: "student",
-          });
-
           const emailSent = await mail(email, password);
 
           if (emailSent) {
             await newStudent.save();
-            await newUser.save();
             return res
               .status(201)
               .json({ message: "Student was created successfully." });
