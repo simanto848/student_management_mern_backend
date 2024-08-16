@@ -184,15 +184,17 @@ export const findOne = async (req, res) => {
 };
 
 export const update = async (req, res) => {
+  const id = req.params.studentId;
   try {
-    const id = req.params.studentId;
-
     if (req.user.role !== "admin") {
       return res.status(403).json({
         message: "Require Admin Role!",
       });
     } else {
-      const data = await Student.findByIdAndUpdate(id, req.body);
+      const data = await Student.findByIdAndUpdate(id, req.body, {
+        useFindAndModify: false,
+      });
+
       if (!data) {
         return res.status(404).json({
           message: `Cannot update Student with id=${id}. Maybe Student was not found!`,
