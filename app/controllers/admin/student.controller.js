@@ -1,7 +1,7 @@
-import Student from "../models/Student.js";
+import Student from "../../models/Student.js";
 import bcrypt from "bcrypt";
-import mail from "../middlewares/MailSender.js";
-import { randomPassword } from "../middlewares/passwordGenerator.js";
+import mail from "../../middlewares/MailSender.js";
+import { randomPassword } from "../../middlewares/passwordGenerator.js";
 
 export const create = async (req, res) => {
   try {

@@ -1,4 +1,4 @@
-import Batch from "../models/Batch.js";
+import Batch from "../../models/Batch.js";
 
 // Create and Save a new Batch
 export const create = async (req, res) => {

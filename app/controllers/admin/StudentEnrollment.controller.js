@@ -1,10 +1,10 @@
-import StudentEnrollment from "../models/StudentEnrollment.js";
-import Student from "../models/Student.js";
-import Batch from "../models/Batch.js";
-import SessionCourse from "../models/SessionCourse.js";
-import StudentCourses from "../models/StudentCourses.js";
-import PaymentDetails from "../models/paymentDetails.js";
-import generateRandomString from "../helpers/StringGenerator.js";
+import StudentEnrollment from "../../models/StudentEnrollment.js";
+import Student from "../../models/Student.js";
+import Batch from "../../models/Batch.js";
+import SessionCourse from "../../models/SessionCourse.js";
+import StudentCourses from "../../models/StudentCourses.js";
+import PaymentDetails from "../../models/paymentDetails.js";
+import generateRandomString from "../../helpers/StringGenerator.js";
 
 // Create and Save a new Enrollment
 export const create = async (req, res) => {

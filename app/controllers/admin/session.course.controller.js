@@ -1,6 +1,6 @@
-import SessionCourse from "../models/SessionCourse.js";
-import Session from "../models/Session.js";
-import Department from "../models/Department.js";
+import SessionCourse from "../../models/SessionCourse.js";
+import Session from "../../models/Session.js";
+import Department from "../../models/Department.js";
 
 export const createSessionCourse = async (req, res) => {
   try {

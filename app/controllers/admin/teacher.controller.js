@@ -1,9 +1,9 @@
 import bcrypt from "bcrypt";
-import Teacher from "../models/Teacher.js";
-import Faculty from "../models/Faculty.js";
-import Department from "../models/Department.js";
-import generateRandomString from "../helpers/StringGenerator.js";
-import mail from "../middlewares/MailSender.js";
+import Teacher from "../../models/Teacher.js";
+import Faculty from "../../models/Faculty.js";
+import Department from "../../models/Department.js";
+import generateRandomString from "../../helpers/StringGenerator.js";
+import mail from "../../middlewares/MailSender.js";
 
 export const createTeacher = async (req, res) => {
   const { name, phone, email, facultyId, departmentId, designation, status } =

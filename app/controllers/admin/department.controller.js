@@ -1,5 +1,5 @@
-import Department from "../models/Department.js";
-import Faculty from "../models/Faculty.js";
+import Department from "../../models/Department.js";
+import Faculty from "../../models/Faculty.js";
 
 // problem with the code
 export const createDepartment = async (req, res) => {

@@ -1,4 +1,4 @@
-import * as PaymentService from "../services/payment.service.js";
+import * as PaymentService from "../../services/payment.service.js";
 
 export const createPayment = async (req, res) => {
   const { studentId } = req.params;
