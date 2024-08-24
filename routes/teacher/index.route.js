@@ -1,9 +1,8 @@
 import express from "express";
-import { verifyUser } from "../../app/middlewares/verifyUser.js";
-import { getCourses } from "../../app/controllers/Teacher/course.controller.js";
+import courseRoutes from "./course.route.js";
 
 const router = express.Router();
 
-router.get("/course", verifyUser, getCourses);
+router.use("/course", courseRoutes);
 
 export default router;

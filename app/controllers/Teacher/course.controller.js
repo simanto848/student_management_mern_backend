@@ -7,17 +7,38 @@ import Attendence from "../../models/Attendence.js";
 // Get all courses of a teacher
 export const getCourses = async (req, res) => {
   if (req.user.role.toLowerCase() !== "teacher") {
-    return res.status(403).send({ message: "Permission denied" });
-  } else {
-    try {
-      const teacherId = req.user.id;
-      const sessionCourseDetails = await SessionCourse.find({
-        teacherId: teacherId,
+    return res.status(403).json({ message: "Permission denied" });
+  }
+
+  try {
+    const teacherId = req.user.id;
+    const sessionCourseDetails = await SessionCourse.find({
+      teacherId: teacherId,
+    })
+      .populate({
+        path: "courseId",
+        select: "-departmentId", // Exclude the departmentId from the course details if necessary
+      })
+      .populate({
+        path: "sessionId",
+        select: "name", // Include only the session name
+      })
+      .populate({
+        path: "departmentId",
+        select: "name", // Include only the department name
+      })
+      .populate({
+        path: "sessionId",
+        populate: {
+          path: "batches",
+          model: "Batch",
+          select: "name", // Include only the batch name
+        },
       });
-      console.log(sessionCourseDetails);
-    } catch (error) {
-      return res.status(500).json({ message: error.message });
-    }
+
+    return res.status(200).json(sessionCourseDetails);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
   }
 };
 

@@ -1,4 +1,5 @@
 import Session from "../../models/Session.js";
+import Batch from "../../models/Batch.js";
 
 export const createSession = async (req, res) => {
   const { session } = req.body;
@@ -20,20 +21,23 @@ export const createSession = async (req, res) => {
   }
 };
 
-export const getSessions = async (req, res) => {
+export const getAllSession = async (req, res) => {
   try {
     const sessions = await Session.find();
     return res.status(200).json(sessions);
   } catch (error) {
-    return res.statu(500).json({ message: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
 
-export const getSession = async (req, res) => {
+export const getSessionById = async (req, res) => {
   const { sessionId } = req.params;
   try {
     if (req.user.role === "admin") {
-      const session = await Session.findById(sessionId);
+      const session = await Session.findById(sessionId).populate(
+        "batcheIds",
+        "name"
+      );
       if (session) {
         return res.status(200).json(session);
       } else {
@@ -47,20 +51,55 @@ export const getSession = async (req, res) => {
   }
 };
 
+export const getSessionByName = async (req, res) => {
+  const { session } = req.body;
+  try {
+    const sessionData = await Session.findOne({ session });
+    if (sessionData) {
+      return res.status(200).json({ session: sessionData });
+    } else {
+      return res.status(404).json({ message: "Session not found" });
+    }
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+export const getSessionBatches = async (req, res) => {
+  const { sessionId } = req.params;
+  try {
+    const session = await Session.findById(sessionId);
+    if (!session) {
+      return res.status(404).json({ message: "Session not found" });
+    } else {
+      const batches = await Batch.find({ sessionId });
+      return res.status(200).json(batches);
+    }
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 export const updateSession = async (req, res) => {
   const { sessionId } = req.params;
-  const { session } = req.body;
+  const { session, batchIds } = req.body;
   try {
     if (req.user.role === "admin") {
       const isSessionExist = await Session.findById(sessionId);
       if (isSessionExist) {
-        const updateSession = await Session.findByIdAndUpdate(sessionId, {
-          session,
-        });
+        const updateSession = await Session.findByIdAndUpdate(
+          sessionId,
+          {
+            session,
+            batcheIds: batchIds,
+          },
+          { new: true }
+        );
+
         if (updateSession) {
           return res
             .status(200)
-            .json({ message: "Session updated successfully" });
+            .json({ message: "Session updated successfully", updateSession });
         } else {
           return res.status(404).json({ message: "Failed to update session!" });
         }
