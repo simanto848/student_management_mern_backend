@@ -3,6 +3,7 @@ import Teacher from "../../models/Teacher.js";
 import Batch from "../../models/Batch.js";
 import Student from "../../models/Student.js";
 import Attendence from "../../models/Attendence.js";
+import Courses from "../../models/Course.js";
 
 // Get all courses of a teacher
 export const getCourses = async (req, res) => {
@@ -12,31 +13,27 @@ export const getCourses = async (req, res) => {
 
   try {
     const teacherId = req.user.id;
-    const sessionCourseDetails = await SessionCourse.find({
+
+    const sessionCourseIds = await SessionCourse.find({
       teacherId: teacherId,
-    })
-      .populate({
-        path: "courseId",
-        select: "-departmentId", // Exclude the departmentId from the course details if necessary
-      })
-      .populate({
-        path: "sessionId",
-        select: "name", // Include only the session name
-      })
-      .populate({
-        path: "departmentId",
-        select: "name", // Include only the department name
-      })
-      .populate({
-        path: "sessionId",
-        populate: {
-          path: "batches",
-          model: "Batch",
-          select: "name", // Include only the batch name
-        },
+    });
+    if (
+      !sessionCourseIds ||
+      sessionCourseIds.length === 0 ||
+      sessionCourseIds[0].sessionId.length === 0
+    ) {
+      return res.status(404).send({ message: "Course not found" });
+    } else {
+      const courses = await Courses.find({
+        _id: { $in: sessionCourseIds.map((course) => course.courseId) },
       });
 
-    return res.status(200).json(sessionCourseDetails);
+      if (!courses || courses.length === 0) {
+        return res.status(404).send({ message: "Course not found" });
+      } else {
+        return res.status(200).json(courses);
+      }
+    }
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -51,13 +48,16 @@ export const addCourseTeacher = async (req, res) => {
     return res.status(403).send({ message: "Permission denied" });
   } else {
     try {
-      const teacherId = req.user.id;
+      const teacherId = req.body.teacherId;
       const teacher = await Teacher.findById(teacherId);
       if (!teacher) {
         return res.status(404).send({ message: "Teacher not found" });
       } else {
         const course = new SessionCourse({
-          // course details
+          sessionId: req.body.sessionId,
+          courseId: req.body.courseId,
+          departmentId: req.body.departmentId,
+          teacherId: teacherId,
         });
         await course.save();
         return res.status(201).json(course);
@@ -70,28 +70,39 @@ export const addCourseTeacher = async (req, res) => {
 
 // Get all batches of a course
 export const getBatches = async (req, res) => {
+  const { courseId } = req.query;
   if (req.user.role.toLowerCase() !== "teacher") {
     return res.status(403).send({ message: "Permission denied" });
-  } else {
-    try {
-      const sessionCourseDetails = await SessionCourse.find({
-        teacherId: req.user.id,
-      });
-      if (!sessionCourseDetails || sessionCourseDetails.length === 0) {
-        return res.status(404).send({ message: "Course not found" });
-      } else {
-        const sessionId = sessionCourseDetails[0].sessionId;
-        const batches = await Batch.find({ sessionId: sessionId });
+  }
 
-        if (!batches || batches.length === 0) {
-          return res.status(404).send({ message: "No batches found" });
-        } else {
-          return res.status(200).json(batches);
-        }
-      }
-    } catch (error) {
-      return res.status(500).json({ message: error.message });
+  try {
+    const sessionIds = await SessionCourse.find({
+      teacherId: req.user.id,
+      courseId: courseId,
+    });
+
+    if (!sessionIds || sessionIds.length === 0) {
+      return res
+        .status(404)
+        .send({ message: "No courses found for this teacher" });
     }
+
+    const batches = await Batch.find(
+      {
+        sessionId: { $in: sessionIds.map((session) => session.sessionId) },
+      },
+      "_id name"
+    );
+
+    if (!batches || batches.length === 0) {
+      return res
+        .status(404)
+        .send({ message: "No batches found for this course" });
+    }
+
+    return res.status(200).json(batches);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
   }
 };
 
