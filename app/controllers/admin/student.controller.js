@@ -150,6 +150,25 @@ export const getStudentByKeyword = async (req, res) => {
   }
 };
 
+// Fetch all students by batchId
+export const getStudentsByBatch = async (req, res) => {
+  const batchId = req.params.batchId;
+  try {
+    const students = await Student.find({ batchId }).populate("departmentId");
+    if (!students) {
+      return res
+        .status(404)
+        .json({ message: "No students found for this batch." });
+    }
+    return res.status(200).json(students);
+  } catch (error) {
+    return res.status(500).json({
+      message: "Error fetching students for this batch",
+      error: error.message,
+    });
+  }
+};
+
 export const findOne = async (req, res) => {
   const id = req.params.studentId;
 
