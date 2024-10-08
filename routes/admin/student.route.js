@@ -15,7 +15,7 @@ const router = express.Router();
 router.post("/", verifyUser, create);
 router.get("/", verifyUser, findAll);
 router.get("/search", verifyUser, getStudentByKeyword);
-router.get("/batch/:batchId/students", getStudentsByBatch);
+router.get("/batch/:batchId/students", verifyUser, getStudentsByBatch);
 router.get("/:studentId", verifyUser, findOne);
 router.put("/:studentId", verifyUser, update);
 router.delete("/:studentId", verifyUser, remove);

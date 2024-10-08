@@ -154,6 +154,11 @@ export const getStudentByKeyword = async (req, res) => {
 export const getStudentsByBatch = async (req, res) => {
   const batchId = req.params.batchId;
   try {
+    if (!req.user) {
+      return res.status(403).json({
+        message: "Login required!",
+      });
+    }
     const students = await Student.find({ batchId }).populate("departmentId");
     if (!students) {
       return res
